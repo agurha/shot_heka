@@ -1,0 +1,31 @@
+[hekad]
+share_dir='/home/ubuntu/heka/common'
+
+[AuthlogInput]
+type = 'LogstreamerInput'
+log_directory = '/var/log'
+file_match = 'auth\.log'
+decoder = 'RsyslogDecoder'
+
+[SyslogInput]
+type = 'LogstreamerInput'
+log_directory = '/var/log'
+file_match = 'syslog'
+decoder = 'RsyslogDecoder'
+
+[RsyslogDecoder]
+type = "SandboxDecoder"
+filename = "lua_decoders/rsyslog.lua"
+    [RsyslogDecoder.config]
+    type = "RSYSLOG_TraditionalFileFormat"
+    template = '%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n'
+    tz = "UTC"
+
+[ESLogstashV0Encoder]
+es_index_from_timestamp = true
+type_name = "%{Type}"
+
+[ElasticSearchOutput]
+message_matcher = "Logger != 'hekad'"
+server = "https://search-urlbox-es-ax5iv2itynn6zhcpvjucgwttfm.us-east-1.es.amazonaws.com"
+encoder = "ESLogstashV0Encoder"
